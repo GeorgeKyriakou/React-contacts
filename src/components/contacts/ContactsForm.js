@@ -1,23 +1,36 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import ContactContext from "../../context/contact/contact.context";
-import { Formik, Form, Field, useField } from "formik";
+import { Formik, Form, Field } from "formik";
 import { TextField, Checkbox, Button } from "@material-ui/core";
 import * as Yup from "yup";
 
-const NumberField = props => {
-  const [fields, meta] = useField(props);
-  const errText = meta.error && meta.touched ? meta.error : "";
-  return <TextField {...fields} helperText={errText} />;
-};
-
 const ContactsForm = () => {
   const contactContext = useContext(ContactContext);
+  const { addContact, updateContact, current, clearCurrent } = contactContext;
   const [contact, setContact] = useState({
     name: "",
     email: "",
     phone: "",
     type: "personal"
   });
+
+  useEffect(() => {
+    //runs as soon as form is created ("mounted") - run onece
+    if (current !== null) {
+      setContact(current);
+    } else {
+      setContact({
+        name: "",
+        email: "",
+        phone: "",
+        type: "personal"
+      });
+    }
+  }, [contactContext, current]);
+
+  const clearForm = () => {
+    clearCurrent();
+  };
 
   const NewContactSchema = Yup.object().shape({
     name: Yup.string().required("Required"),
@@ -27,23 +40,21 @@ const ContactsForm = () => {
     phone: Yup.number().required("Required")
   });
 
-  const onSubmit = data => {
-    console.log({ data });
-
-    setContact({ ...contact, data });
-  };
-
   return (
     <div>
-      <h2 className="text-primary">Add contact</h2>
+      <h2 className="text-primary">
+        {current ? "Edit contact" : "Add contact"}
+      </h2>
       <Formik
+        enableReinitialize
         initialValues={contact}
         validationSchema={NewContactSchema}
         onSubmit={(data, { setSubmitting }) => {
           if (data) {
             setSubmitting(true);
-            onSubmit(data); //assume an async call here
+            current ? updateContact(data) : addContact(data);
             setSubmitting(false);
+            clearCurrent();
           }
         }}
       >
@@ -95,6 +106,7 @@ const ContactsForm = () => {
                     e.target.checked ? "professional" : "personal"
                   )
                 }
+                checked={current && current.type === "professional"}
                 name="type"
                 value={values.type}
                 color="primary"
@@ -109,9 +121,21 @@ const ContactsForm = () => {
                 type="submit"
                 className="btn btn-primary btn-block"
               >
-                Submit
+                {current ? "Update" : "Submit"}
               </Button>
             </div>
+            {!!current && (
+              <div>
+                <Button
+                  color="inherit"
+                  variant="outlined"
+                  onClick={clearForm}
+                  className="btn btn-primary btn-block"
+                >
+                  Clear form
+                </Button>
+              </div>
+            )}
           </Form>
         )}
       </Formik>

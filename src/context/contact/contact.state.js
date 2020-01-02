@@ -3,6 +3,7 @@ import uuid from "uuid";
 import ContactContext from "./contact.context";
 import contactReducer from "./contact.reducer";
 import * as action from "../types";
+import { string } from "postcss-selector-parser";
 
 const ContactState = props => {
   const initialState = {
@@ -28,27 +29,58 @@ const ContactState = props => {
         phone: "123123123",
         type: "professional"
       }
-    ]
+    ],
+    current: null,
+    filteredContacts: null
   };
 
   const [state, dispatch] = useReducer(contactReducer, initialState);
 
-  //add contact
+  const addContact = contact => {
+    contact.id = uuid.v4();
+    dispatch({ type: action.ADD_CONTACT, payload: contact });
+  };
 
-  //delete contact
+  const deleteContact = id => {
+    dispatch({ type: action.DELETE_CONTACT, payload: id });
+  };
+
+  const setCurrent = contact => {
+    dispatch({ type: action.SET_CURRENT, payload: contact });
+  };
+
+  const clearCurrent = () => {
+    dispatch({ type: action.CLEAR_CURRENT });
+  };
 
   //update contact
-
-  //set current contact
-
-  //clear current contact
+  const updateContact = contact => {
+    dispatch({ type: action.UPDATE_CONTACT, payload: contact });
+  };
 
   //filter contact
-
+  const filterContacts = searchQuery => {
+    dispatch({ type: action.FILTER_CONTACTS, payload: searchQuery });
+  };
   //clear fiter
-
+  const clearFilter = () => {
+    dispatch({ type: action.CLEAR_FILTERS });
+  };
   return (
-    <ContactContext.Provider value={{ contacts: state.contacts }}>
+    <ContactContext.Provider
+      value={{
+        contacts: state.contacts,
+        current: state.current,
+        filteredContacts: state.filteredContacts,
+        addContact,
+        updateContact,
+        deleteContact,
+        filterContacts,
+        clearFilter,
+        setCurrent,
+        clearCurrent
+      }}
+    >
       {props.children}
     </ContactContext.Provider>
   );

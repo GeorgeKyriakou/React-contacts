@@ -4,13 +4,15 @@ import ContactContext from "../../context/contact/contact.context";
 
 export const Contacts = () => {
   const contactContext = useContext(ContactContext);
-  const { contacts } = contactContext;
+  const { contacts, filteredContacts } = contactContext;
+  const displayedContacts = filteredContacts || contacts;
 
   return (
     <Fragment>
-      {contacts.map(contact => (
-        <ContactItem key={contact.id} contact={contact}></ContactItem>
-      ))}
+      {displayedContacts &&
+        displayedContacts.map(contact => (
+          <ContactItem key={contact.id} contact={contact}></ContactItem>
+        ))}
     </Fragment>
   );
 };
